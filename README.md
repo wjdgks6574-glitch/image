@@ -6,14 +6,16 @@ Windows용 GUI 프로그램입니다.
 
 ## 버전
 
-수정할 때마다 파일명에 버전을 표기합니다 (`wafer_search_v1.py`, `wafer_search_v3.pyw`, ...).
+수정할 때마다 파일명에 버전을 표기합니다 (`wafer_search_v1.py`, `wafer_search_v4.pyw`, ...).
 항상 **가장 높은 버전 번호의 파일이 최신**이며, 이전 버전 파일은 기록용으로 남겨둡니다.
-현재 최신 버전: `wafer_search_v3.pyw`
+현재 최신 버전: `wafer_search_v4.pyw`
 
 - v1: 최초 버전 (waferID 날짜 +-1일 폴더 검색, 검색/복사 병렬화)
 - v2: 창 제목에 버전 표시 추가. (`.bat`+`.vbs` 조합으로 콘솔 없이 실행 — v3에서 폐기)
 - v3: 확장자를 `.pyw`로 변경. 파일 하나만 더블클릭하면 콘솔 창 없이 바로 실행됨
   (별도 `.bat`/`.vbs` 런처 불필요).
+- v4: waferID에서 날짜를 못 찾는 형식(예: `A1L6265208320270`)일 때의 전체 검색도
+  날짜 폴더 단위로 병렬 처리하도록 개선 (기존엔 순차 검색이라 매우 느렸음).
 
 ## 동작 방식
 
@@ -37,7 +39,7 @@ Python 스크립트를 그대로 실행하는 방식을 사용합니다. (별도
 1. 실행할 PC에 Python이 없다면 설치합니다. (https://www.python.org/downloads/windows/,
    설치 시 "Add python.exe to PATH" 체크. 기본 설치 옵션이면 `.pyw` 확장자가
    자동으로 콘솔 없는 `pythonw.exe`와 연결됩니다.)
-2. 이 저장소의 `wafer_search_v3.pyw`(최신 버전) **파일 하나만** PC로
+2. 이 저장소의 `wafer_search_v4.pyw`(최신 버전) **파일 하나만** PC로
    다운로드합니다.
 3. **더블클릭**하면 cmd 콘솔 창 없이 바로 GUI가 실행됩니다.
    (`.pyw` 확장자는 Windows에서 기본적으로 `pythonw.exe`로 실행되어
@@ -52,6 +54,8 @@ Python 스크립트를 그대로 실행하는 방식을 사용합니다. (별도
 ## 참고
 
 - 네트워크 경로 `\\172.23.11.134\ELImages`에 접근 권한이 있어야 검색이 됩니다.
-- waferID의 날짜 패턴이 다른 형식일 경우 `wafer_search_v3.pyw`의
+- waferID의 날짜 패턴이 다른 형식일 경우 `wafer_search_v4.pyw`의
   `DATE_IN_WAFERID_RE` 정규식을 상황에 맞게 수정해야 합니다.
+  (`A1L6265208320270`처럼 날짜를 못 찾는 형식은 전체 날짜 폴더를 병렬로
+  검색하는 fallback으로 동작하며, `ALL...` 형식보다 느릴 수 있습니다.)
 - 검색 대상 확장자를 늘리고 싶다면 `IMAGE_EXTS` 목록에 추가하세요.
