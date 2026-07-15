@@ -4,6 +4,15 @@
 포함된 이미지를 찾아서 바탕화면의 `Wafer검색결과\{waferID}\` 폴더로 복사해주는
 Windows용 GUI 프로그램입니다.
 
+## 버전
+
+수정할 때마다 파일명에 버전을 표기합니다 (`wafer_search_v1.py`, `wafer_search_v2.py`, ...).
+항상 **가장 높은 버전 번호의 파일이 최신**이며, 이전 버전 파일은 기록용으로 남겨둡니다.
+현재 최신 버전: `wafer_search_v2.py`
+
+- v1: 최초 버전 (waferID 날짜 +-1일 폴더 검색, 검색/복사 병렬화)
+- v2: 창 제목에 버전 표시 추가. cmd 콘솔 창 없이 실행되도록 런처 정비.
+
 ## 동작 방식
 
 1. 입력한 waferID에서 날짜(YYMMDD)를 추출합니다.
@@ -24,13 +33,20 @@ Python 스크립트(.py)를 그대로 실행하는 방식을 사용합니다. (�
 외 패키지 설치가 필요 없습니다.)
 
 1. 실행할 PC에 Python이 없다면 설치합니다. (https://www.python.org/downloads/windows/,
-   설치 시 "Add python.exe to PATH" 체크)
-2. 이 저장소의 `wafer_search.py`와 `run_wafer_search.bat` 파일을 PC로 다운로드합니다.
-3. `run_wafer_search.bat`를 더블클릭하면 콘솔창 없이 GUI만 바로 뜹니다.
-   (또는 명령 프롬프트에서 `python wafer_search.py`로 직접 실행해도 됩니다.)
+   설치 시 "Add python.exe to PATH" 및 "Install launcher for all users" 체크)
+2. 이 저장소의 `wafer_search_v2.py`(최신 버전), `run_wafer_search.bat`,
+   `run_wafer_search.vbs` 세 파일을 같은 폴더(예: 바탕화면)에 다운로드합니다.
+3. **`run_wafer_search.vbs`를 더블클릭**하세요. cmd 콘솔 창이 전혀 뜨지 않고
+   GUI만 바로 실행됩니다. (`.vbs`가 `.bat`을 완전히 숨김 모드로 실행합니다.)
 
-바탕화면에 두 파일을 함께 두고 `run_wafer_search.bat`에 바로가기를 만들어두면
-매번 더블클릭만으로 실행할 수 있습니다.
+`run_wafer_search.bat`을 직접 더블클릭해도 되지만, pyw/pythonw가 없는 예외적인
+경우 콘솔 창이 잠깐 보일 수 있습니다. 평소에는 `.vbs` 쪽을 사용하세요.
+`run_wafer_search.vbs`에 바로가기를 만들어두면 매번 더블클릭만으로 실행할 수 있습니다.
+
+### 새 버전으로 올릴 때
+
+`run_wafer_search.bat` 안의 파일명(`wafer_search_v2.py`)을 최신 버전 파일명으로
+바꿔주면 됩니다.
 
 ## 참고
 
