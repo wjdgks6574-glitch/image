@@ -17,28 +17,20 @@ Windows용 GUI 프로그램입니다.
 4. 바탕화면 `Wafer검색결과\{waferID}\` 폴더에 결과를 모읍니다.
    같은 waferID로 다시 검색하면 해당 폴더를 비우고 새로 채웁니다.
 
-## 실행 방법 (Python이 설치된 PC)
+## 실행 방법
 
-```
-python wafer_search.py
-```
+exe로 빌드하면 회사 보안 프로그램이 미인가 프로그램으로 차단할 수 있어,
+Python 스크립트(.py)를 그대로 실행하는 방식을 사용합니다. (별도 표준 라이브러리
+외 패키지 설치가 필요 없습니다.)
 
-## exe로 만들기 (Python 없는 PC에서 실행하고 싶을 때)
+1. 실행할 PC에 Python이 없다면 설치합니다. (https://www.python.org/downloads/windows/,
+   설치 시 "Add python.exe to PATH" 체크)
+2. 이 저장소의 `wafer_search.py`와 `run_wafer_search.bat` 파일을 PC로 다운로드합니다.
+3. `run_wafer_search.bat`를 더블클릭하면 콘솔창 없이 GUI만 바로 뜹니다.
+   (또는 명령 프롬프트에서 `python wafer_search.py`로 직접 실행해도 됩니다.)
 
-`\\172.23.11.134\ELImages`에 접근 가능한 Windows PC에서 아래 순서로 진행하세요.
-(exe 빌드는 Windows에서만 Windows용 exe가 만들어집니다.)
-
-1. Python 설치 (https://www.python.org/downloads/windows/)
-2. 이 저장소의 `wafer_search.py` 파일을 PC로 다운로드
-3. 명령 프롬프트(cmd)에서:
-
-```
-pip install pyinstaller
-pyinstaller --onefile --noconsole --name WaferSearch wafer_search.py
-```
-
-4. `dist\WaferSearch.exe` 파일이 생성됩니다. 이 파일을 원하는 위치(바탕화면 등)로
-   옮겨서 더블클릭하면 바로 실행됩니다. (Python 설치가 없어도 실행 가능)
+바탕화면에 두 파일을 함께 두고 `run_wafer_search.bat`에 바로가기를 만들어두면
+매번 더블클릭만으로 실행할 수 있습니다.
 
 ## 참고
 
