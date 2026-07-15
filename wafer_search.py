@@ -5,7 +5,8 @@ Wafer ID 이미지 검색 프로그램
 파일명에 포함된 이미지를 찾아 바탕화면\\Wafer검색결과\\{waferID}\\ 폴더로 복사합니다.
 
 waferID에 포함된 날짜(YYMMDD, 예: 260526 -> 2026-05-26)를 이용해
-ELImages\\{라인}\\{YYYYMMDD}\\ 폴더만 검색하므로 전체 폴더를 다 뒤지지 않고 빠르게 찾습니다.
+ELImages\\{라인}\\{YYYYMMDD}\\ 폴더 및 그 전날/다음날(+-1일) 폴더만 검색하므로
+전체 폴더를 다 뒤지지 않고 빠르게 찾습니다.
 """
 
 import os
@@ -13,23 +14,34 @@ import re
 import shutil
 import threading
 import queue
+from datetime import date, timedelta
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 ROOT_PATH = r"\\172.23.11.134\ELImages"
 RESULT_BASE_FOLDER_NAME = "Wafer검색결과"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
+DATE_SEARCH_WINDOW_DAYS = 1  # waferID 날짜 기준 +-1일까지 검색
 
 # waferID 안에서 YYMMDD를 추출: 6자리 숫자 뒤에 'A'가 오는 패턴 (예: ALL4260526A89264 -> 260526)
 DATE_IN_WAFERID_RE = re.compile(r"(\d{6})A")
 
 
-def extract_yyyymmdd(wafer_id):
+def extract_date(wafer_id):
     match = DATE_IN_WAFERID_RE.search(wafer_id)
     if not match:
         return None
     yymmdd = match.group(1)
-    return "20" + yymmdd
+    yy, mm, dd = yymmdd[0:2], yymmdd[2:4], yymmdd[4:6]
+    try:
+        return date(2000 + int(yy), int(mm), int(dd))
+    except ValueError:
+        return None
+
+
+def date_range_folders(center_date, window_days=DATE_SEARCH_WINDOW_DAYS):
+    offsets = range(-window_days, window_days + 1)
+    return [(center_date + timedelta(days=n)).strftime("%Y%m%d") for n in offsets]
 
 
 def find_desktop_path():
@@ -56,7 +68,7 @@ def is_image_match(filename, wafer_id):
     return wafer_id.lower() in filename.lower()
 
 
-def search_by_date_folder(wafer_id, yyyymmdd, log):
+def search_by_date_folders(wafer_id, yyyymmdd_list, log):
     found = []
     if not os.path.isdir(ROOT_PATH):
         log("네트워크 경로에 접근할 수 없습니다: {}".format(ROOT_PATH))
@@ -73,14 +85,15 @@ def search_by_date_folder(wafer_id, yyyymmdd, log):
         return found
 
     for line_dir in line_dirs:
-        date_dir = os.path.join(line_dir, yyyymmdd)
-        if not os.path.isdir(date_dir):
-            continue
-        log("검색 중: {}".format(date_dir))
-        for current_root, _dirs, files in os.walk(date_dir):
-            for filename in files:
-                if is_image_match(filename, wafer_id):
-                    found.append(os.path.join(current_root, filename))
+        for yyyymmdd in yyyymmdd_list:
+            date_dir = os.path.join(line_dir, yyyymmdd)
+            if not os.path.isdir(date_dir):
+                continue
+            log("검색 중: {}".format(date_dir))
+            for current_root, _dirs, files in os.walk(date_dir):
+                for filename in files:
+                    if is_image_match(filename, wafer_id):
+                        found.append(os.path.join(current_root, filename))
 
     return found
 
@@ -207,10 +220,15 @@ class WaferSearchApp:
         self.search_thread.start()
 
     def _run_search(self, wafer_id):
-        yyyymmdd = extract_yyyymmdd(wafer_id)
-        if yyyymmdd:
-            self.log("waferID에서 날짜 인식: {}".format(yyyymmdd))
-            found = search_by_date_folder(wafer_id, yyyymmdd, self.log)
+        center_date = extract_date(wafer_id)
+        if center_date:
+            yyyymmdd_list = date_range_folders(center_date)
+            self.log(
+                "waferID에서 날짜 인식: {} (검색 대상: {})".format(
+                    center_date.strftime("%Y-%m-%d"), ", ".join(yyyymmdd_list)
+                )
+            )
+            found = search_by_date_folders(wafer_id, yyyymmdd_list, self.log)
         else:
             found = search_full(wafer_id, self.log)
 
