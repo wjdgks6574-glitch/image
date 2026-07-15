@@ -14,6 +14,7 @@ import re
 import shutil
 import threading
 import queue
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -22,6 +23,7 @@ ROOT_PATH = r"\\172.23.11.134\ELImages"
 RESULT_BASE_FOLDER_NAME = "Wafer검색결과"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 DATE_SEARCH_WINDOW_DAYS = 1  # waferID 날짜 기준 +-1일까지 검색
+SEARCH_WORKERS = 8  # 라인x날짜 폴더를 동시에 검색할 스레드 수
 
 # waferID 안에서 YYMMDD를 추출: 6자리 숫자 뒤에 'A'가 오는 패턴 (예: ALL4260526A89264 -> 260526)
 DATE_IN_WAFERID_RE = re.compile(r"(\d{6})A")
@@ -68,6 +70,16 @@ def is_image_match(filename, wafer_id):
     return wafer_id.lower() in filename.lower()
 
 
+def _search_one_dir(wafer_id, date_dir, log):
+    log("검색 중: {}".format(date_dir))
+    matches = []
+    for current_root, _dirs, files in os.walk(date_dir):
+        for filename in files:
+            if is_image_match(filename, wafer_id):
+                matches.append(os.path.join(current_root, filename))
+    return matches
+
+
 def search_by_date_folders(wafer_id, yyyymmdd_list, log):
     found = []
     if not os.path.isdir(ROOT_PATH):
@@ -84,16 +96,27 @@ def search_by_date_folders(wafer_id, yyyymmdd_list, log):
         log("폴더 목록을 읽는 중 오류: {}".format(e))
         return found
 
-    for line_dir in line_dirs:
-        for yyyymmdd in yyyymmdd_list:
-            date_dir = os.path.join(line_dir, yyyymmdd)
-            if not os.path.isdir(date_dir):
-                continue
-            log("검색 중: {}".format(date_dir))
-            for current_root, _dirs, files in os.walk(date_dir):
-                for filename in files:
-                    if is_image_match(filename, wafer_id):
-                        found.append(os.path.join(current_root, filename))
+    target_dirs = [
+        os.path.join(line_dir, yyyymmdd)
+        for line_dir in line_dirs
+        for yyyymmdd in yyyymmdd_list
+        if os.path.isdir(os.path.join(line_dir, yyyymmdd))
+    ]
+
+    if not target_dirs:
+        return found
+
+    with ThreadPoolExecutor(max_workers=min(SEARCH_WORKERS, len(target_dirs))) as executor:
+        futures = {
+            executor.submit(_search_one_dir, wafer_id, date_dir, log): date_dir
+            for date_dir in target_dirs
+        }
+        for future in as_completed(futures):
+            date_dir = futures[future]
+            try:
+                found.extend(future.result())
+            except OSError as e:
+                log("검색 오류: {} ({})".format(date_dir, e))
 
     return found
 
@@ -113,6 +136,12 @@ def search_full(wafer_id, log):
     return found
 
 
+def _copy_one(src, dest_dir):
+    dst = os.path.join(dest_dir, os.path.basename(src))
+    shutil.copy2(src, dst)
+    return dst
+
+
 def copy_results(files, wafer_id, log):
     desktop = find_desktop_path()
     dest_dir = os.path.join(desktop, RESULT_BASE_FOLDER_NAME, wafer_id)
@@ -122,13 +151,14 @@ def copy_results(files, wafer_id, log):
     os.makedirs(dest_dir, exist_ok=True)
 
     copied = []
-    for src in files:
-        dst = os.path.join(dest_dir, os.path.basename(src))
-        try:
-            shutil.copy2(src, dst)
-            copied.append(dst)
-        except OSError as e:
-            log("복사 실패: {} ({})".format(src, e))
+    with ThreadPoolExecutor(max_workers=min(SEARCH_WORKERS, len(files))) as executor:
+        futures = {executor.submit(_copy_one, src, dest_dir): src for src in files}
+        for future in as_completed(futures):
+            src = futures[future]
+            try:
+                copied.append(future.result())
+            except OSError as e:
+                log("복사 실패: {} ({})".format(src, e))
 
     return dest_dir, copied
 
