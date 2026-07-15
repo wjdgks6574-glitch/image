@@ -7,9 +7,9 @@ Sorter(`\\172.23.69.125\Sorter`) 안에서 waferID(예: `ALL4260526A89264`)가
 
 ## 버전
 
-수정할 때마다 파일명에 버전을 표기합니다 (`wafer_search_v1.py`, `wafer_search_v18.pyw`, ...).
+수정할 때마다 파일명에 버전을 표기합니다 (`wafer_search_v1.py`, `wafer_search_v19.pyw`, ...).
 항상 **가장 높은 버전 번호의 파일이 최신**이며, 이전 버전 파일은 기록용으로 남겨둡니다.
-현재 최신 버전: `wafer_search_v18.pyw`
+현재 최신 버전: `wafer_search_v19.pyw`
 
 - v1: 최초 버전 (waferID 날짜 +-1일 폴더 검색, 검색/복사 병렬화)
 - v2: 창 제목에 버전 표시 추가. (`.bat`+`.vbs` 조합으로 콘솔 없이 실행 — v3에서 폐기)
@@ -108,6 +108,8 @@ Sorter(`\\172.23.69.125\Sorter`) 안에서 waferID(예: `ALL4260526A89264`)가
      그 자리가 B인 waferID는 날짜 추출 자체가 실패해 항상 느린 전체
      검색으로 빠지고 있었습니다. A/B 둘 다 인식하도록 수정 (58,497건
      재검증: 날짜 인식 결과는 기존과 동일, 회귀 없음).
+- v19: 날짜 검색 순서를 "당일 → 전날 → 다음날"에서
+  "당일 → 다음날 → 전날"로 변경.
 
 ## 동작 방식
 
@@ -162,7 +164,7 @@ Python 스크립트를 그대로 실행하는 방식을 사용합니다. (별도
 1. 실행할 PC에 Python이 없다면 설치합니다. (https://www.python.org/downloads/windows/,
    설치 시 "Add python.exe to PATH" 체크. 기본 설치 옵션이면 `.pyw` 확장자가
    자동으로 콘솔 없는 `pythonw.exe`와 연결됩니다.)
-2. 이 저장소의 `wafer_search_v18.pyw`(최신 버전) **파일 하나만** PC로
+2. 이 저장소의 `wafer_search_v19.pyw`(최신 버전) **파일 하나만** PC로
    다운로드합니다.
 3. **더블클릭**하면 cmd 콘솔 창 없이 바로 GUI가 실행됩니다.
    (`.pyw` 확장자는 Windows에서 기본적으로 `pythonw.exe`로 실행되어
@@ -179,11 +181,11 @@ Python 스크립트를 그대로 실행하는 방식을 사용합니다. (별도
 - 1동(`\\172.23.11.134\ELImages`), 2동(`\\172.23.10.159\JC02_Cell_ELImage`),
   Sorter(`\\172.23.69.125\Sorter`), Result_Images(`\\172.23.69.112\Result_Images`)
   네 네트워크 경로 모두 접근 권한이 있어야 검색이 됩니다. 경로가 바뀌면
-  `wafer_search_v18.pyw`의 `ROOT_PATHS`(1동/2동), `SORTER_ROOT`,
+  `wafer_search_v19.pyw`의 `ROOT_PATHS`(1동/2동), `SORTER_ROOT`,
   `RESULT_IMAGES_ROOT`를 각각 수정하면 됩니다.
 - 위 4가지 형식 중 어디에도 해당하지 않는 waferID는 날짜를 추출하지 못해
   전체 날짜 폴더를 병렬로 검색하는 fallback으로 동작하며, 형식이 맞는
-  경우보다 느릴 수 있습니다. 새로운 형식이 있다면 `wafer_search_v18.pyw`의
+  경우보다 느릴 수 있습니다. 새로운 형식이 있다면 `wafer_search_v19.pyw`의
   `extract_date` 관련 함수에 규칙을 추가하면 됩니다.
 - `PREFIX_LINE_HINTS`는 2026-07-09~07-12 스냅샷이라 장비 배치가 바뀌면
   틀릴 수 있지만, 못 찾으면 자동으로 전체 라인 폴더 검색으로 넘어가므로
