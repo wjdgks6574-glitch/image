@@ -1,14 +1,15 @@
 # Wafer ID 이미지 검색 프로그램
 
-1동(`\\172.23.11.134\ELImages`)과 2동(`\\172.23.10.159\JC02_Cell_ELImage`) 안에서
-waferID(예: `ALL4260526A89264`)가 파일명에 포함된 이미지를 찾아서 바탕화면의
-`Wafer검색결과\{waferID}\` 폴더로 복사해주는 Windows용 GUI 프로그램입니다.
+1동(`\\172.23.11.134\ELImages`), 2동(`\\172.23.10.159\JC02_Cell_ELImage`),
+Sorter(`\\172.23.69.125\Sorter`) 안에서 waferID(예: `ALL4260526A89264`)가
+파일명에 포함된 이미지를 찾아서 바탕화면의 `Wafer검색결과\{waferID}\` 폴더로
+복사해주는 Windows용 GUI 프로그램입니다.
 
 ## 버전
 
-수정할 때마다 파일명에 버전을 표기합니다 (`wafer_search_v1.py`, `wafer_search_v11.pyw`, ...).
+수정할 때마다 파일명에 버전을 표기합니다 (`wafer_search_v1.py`, `wafer_search_v12.pyw`, ...).
 항상 **가장 높은 버전 번호의 파일이 최신**이며, 이전 버전 파일은 기록용으로 남겨둡니다.
-현재 최신 버전: `wafer_search_v11.pyw`
+현재 최신 버전: `wafer_search_v12.pyw`
 
 - v1: 최초 버전 (waferID 날짜 +-1일 폴더 검색, 검색/복사 병렬화)
 - v2: 창 제목에 버전 표시 추가. (`.bat`+`.vbs` 조합으로 콘솔 없이 실행 — v3에서 폐기)
@@ -43,6 +44,11 @@ waferID(예: `ALL4260526A89264`)가 파일명에 포함된 이미지를 찾아�
   검색하며, waferID마다 각자의 `Wafer검색결과\{waferID}\` 폴더에 결과가
   모입니다. "결과 폴더 열기"는 이제 전체 결과가 모이는 상위 폴더
   (`Wafer검색결과`)를 엽니다.
+- v12: 세 번째 경로 `\\172.23.69.125\Sorter` 검색 추가. 구조가 달라
+  (`Sorter\{JC01|JC02}\{boxed 또는 origin\{anomaly|defect|undefect}}\{YYYYMMDD}\BG{설비번호}\{YYYYMMDDHH}\`)
+  전용 검색 로직을 추가했고, `PREFIX_LINE_HINTS`의 라인 폴더명 뒤 2자리를
+  그대로 재사용해 `BG` 폴더를 추정합니다 (예: `1922` → `BG22`). 1동/2동
+  검색과 마찬가지로 waferID마다 이 경로도 함께 검색해 결과를 합칩니다.
 
 ## 동작 방식
 
@@ -65,9 +71,13 @@ waferID(예: `ALL4260526A89264`)가 파일명에 포함된 이미지를 찾아�
    `{동 경로}\{라인번호}\{YYYYMMDD}\` 폴더를 다 뒤지지 않고 검색합니다.
    (날짜를 인식하지 못하면 두 경로의 전체 폴더를 검색하며, 이 경우 시간이
    오래 걸릴 수 있습니다.)
-3. 파일명에 waferID 문자열이 포함된 이미지 파일(jpg, jpeg, png, bmp, tif, tiff)을
+3. Sorter 경로(`\\172.23.69.125\Sorter\{JC01|JC02}\{boxed 또는
+   origin\anomaly|defect|undefect}\{YYYYMMDD}\BG{설비번호}\`)도 항상 함께
+   검색합니다. 여기서도 `PREFIX_LINE_HINTS`로 `BG` 폴더를 먼저 추정해
+   빠르게 찾고, 못 찾으면 해당 날짜 폴더 전체(모든 BG 폴더)로 넓혀 검색합니다.
+4. 파일명에 waferID 문자열이 포함된 이미지 파일(jpg, jpeg, png, bmp, tif, tiff)을
    찾아 **복사**합니다 (원본은 그대로 유지).
-4. 바탕화면 `Wafer검색결과\{waferID}\` 폴더에 결과를 모읍니다.
+5. 바탕화면 `Wafer검색결과\{waferID}\` 폴더에 결과를 모읍니다.
    같은 waferID로 다시 검색하면 해당 폴더를 비우고 새로 채웁니다.
    여러 waferID를 한 번에 입력하면 순서대로 하나씩 검색하며, waferID마다
    각자의 하위 폴더에 결과가 모입니다.
@@ -81,7 +91,7 @@ Python 스크립트를 그대로 실행하는 방식을 사용합니다. (별도
 1. 실행할 PC에 Python이 없다면 설치합니다. (https://www.python.org/downloads/windows/,
    설치 시 "Add python.exe to PATH" 체크. 기본 설치 옵션이면 `.pyw` 확장자가
    자동으로 콘솔 없는 `pythonw.exe`와 연결됩니다.)
-2. 이 저장소의 `wafer_search_v11.pyw`(최신 버전) **파일 하나만** PC로
+2. 이 저장소의 `wafer_search_v12.pyw`(최신 버전) **파일 하나만** PC로
    다운로드합니다.
 3. **더블클릭**하면 cmd 콘솔 창 없이 바로 GUI가 실행됩니다.
    (`.pyw` 확장자는 Windows에서 기본적으로 `pythonw.exe`로 실행되어
@@ -95,12 +105,13 @@ Python 스크립트를 그대로 실행하는 방식을 사용합니다. (별도
 
 ## 참고
 
-- 1동(`\\172.23.11.134\ELImages`), 2동(`\\172.23.10.159\JC02_Cell_ELImage`)
-  두 네트워크 경로 모두 접근 권한이 있어야 검색이 됩니다. 경로가 추가/변경되면
-  `wafer_search_v11.pyw`의 `ROOT_PATHS` 목록에 추가/수정하면 됩니다.
+- 1동(`\\172.23.11.134\ELImages`), 2동(`\\172.23.10.159\JC02_Cell_ELImage`),
+  Sorter(`\\172.23.69.125\Sorter`) 세 네트워크 경로 모두 접근 권한이 있어야
+  검색이 됩니다. 1동/2동 경로가 추가/변경되면 `wafer_search_v12.pyw`의
+  `ROOT_PATHS` 목록, Sorter 경로가 바뀌면 `SORTER_ROOT`를 수정하면 됩니다.
 - 위 4가지 형식 중 어디에도 해당하지 않는 waferID는 날짜를 추출하지 못해
   전체 날짜 폴더를 병렬로 검색하는 fallback으로 동작하며, 형식이 맞는
-  경우보다 느릴 수 있습니다. 새로운 형식이 있다면 `wafer_search_v11.pyw`의
+  경우보다 느릴 수 있습니다. 새로운 형식이 있다면 `wafer_search_v12.pyw`의
   `extract_date` 관련 함수에 규칙을 추가하면 됩니다.
 - `PREFIX_LINE_HINTS`는 2026-07-09~07-12 스냅샷이라 장비 배치가 바뀌면
   틀릴 수 있지만, 못 찾으면 자동으로 전체 라인 폴더 검색으로 넘어가므로
